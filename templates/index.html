@@ -1,19 +1,166 @@
-<head>
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+{% extends "base.html" %}
 
-<body>
-    <div class="App">
-        <header class="App-header">
-            <img src="{{ url_for('static', filename='Octocat.png') }}" class="App-logo" alt="logo" />
-            <p>
-                GitHub Codespaces <span class="heart">♥️</span> Flask
-            </p>
-            <p class="small">
-                Edit <code>templates/index.html</code> and refresh to see your changes!
-            </p>
-        </header>
+{% block titulo %} Stante {% endblock %}
+
+{% block conteudo %}
+<section class="mb-6 flex flex-col items-center text-center">
+
+    <img
+        src="{{ url_for('static', filename='images/inicio.png') }}"
+        alt="Stante e figura de lampada"
+        class="h-28 w-auto mb-2"
+    >
+
+    <p class="text-sm text-slate-600">
+        Seu acervo particular
+    </p>
+</section>
+
+<section class="mb-6 rounded-xl bg-white p-6 shadow">
+    <form method="get" action="{{ url_for('index') }}">
+        <label for="busca" class="mb-2 block font-semibold">
+            Pesquisar por nome do livro ou autor
+        </label>
+
+        <div class="mb-4 flex gap-2">
+            <input
+                id="busca"
+                type="text"
+                name="busca"
+                value="{{ busca }}"
+                placeholder="Digite o nome do livro ou do autor"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2"
+            >
+
+            <button
+                type="submit"
+                class="rounded-lg px-4 py-2 text-white hover:bg-slate-100 whitespace-nowrap"
+            >
+                🔍
+            </button>
+
+            <a
+                href="{{ url_for('index') }}"
+                class="rounded-lg border border-slate-100 px-4 py-2 hover:bg-slate-100 whitespace-nowrap"
+            >
+                Limpar
+            </a>
+        </div>
+
+        <details
+            class="mb-4"
+            {% if categoria_selecionada or status_selecionado %}open{% endif %}
+        >
+            <summary class="cursor-pointer font-semibold">Filtros</summary>
+
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="categoria" class="mb-1 block">Categoria</label>
+                    <select
+                        id="categoria"
+                        name="categoria"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                    >
+                        <option value="">Todas as categorias</option>
+                        {% for categoria in categorias %}
+                            <option
+                                value="{{ categoria }}"
+                                {% if categoria_selecionada == categoria %}selected{% endif %}
+                            >
+                                {{ categoria }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="status" class="mb-1 block">Status</label>
+                    <select
+                        id="status"
+                        name="status"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                    >
+                        <option value="">Todos os status</option>
+                        {% for opcao in status_opcoes %}
+                            <option
+                                value="{{ opcao }}"
+                                {% if status_selecionado == opcao %}selected{% endif %}
+                            >
+                                {{ opcao }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </details>
+    </form>
+</section>
+
+<section class="mb-6 flex flex-wrap justify-center gap-3">
+    <a
+        href="{{ url_for('estimativa') }}"
+        class="rounded-lg bg-violet-300 px-4 py-2 font-semibold text-white hover:bg-violet-500"
+    >
+        Estimativa
+    </a>
+
+    <a
+        href="{{ url_for('adicionar') }}"
+        class="rounded-lg bg-violet-300 px-4 py-2 font-semibold text-white hover:bg-indigo-500"
+    >
+        Adicionar livro
+    </a>
+
+    <a
+        href="{{ url_for('proxima_leitura') }}"
+        class="rounded-lg bg-orange-300 px-4 py-2 font-semibold text-white hover:bg-orange-500"
+    >
+        Acaso
+    </a>
+</section>
+
+<section>
+    <div class="mb-3">
+        <h2 class="text-2xl font-bold">Livros</h2>
     </div>
-</body>
 
-</html>
+    {% if livros %}
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% for livro in livros %}
+                <a
+                    href="{{ url_for('detalhes', livro_id=livro.id) }}"
+                    class="flex items-center gap-4 rounded-xl bg-white p-5 shadow transition hover:shadow-md hover:-translate-y-0.5"
+                >
+                    {% if livro.capa %}
+                        <img
+                            src="{{ url_for('static', filename='uploads/' + livro.capa) }}"
+                            alt="Capa de {{ livro.nome }}"
+                            class="h-20 w-14 flex-shrink-0 rounded-md object-cover shadow"
+                        >
+                    {% else %}
+                        <div class="flex h-20 w-14 flex-shrink-0 items-center justify-center rounded-md bg-slate-100 text-2xl">
+                            📖
+                        </div>
+                    {% endif %}
+
+                    <div class="min-w-0">
+                        <h3 class="mb-1 truncate text-lg font-semibold text-indigo-700">
+                            {{ livro.nome }}
+                        </h3>
+                        <p class="mb-2 text-sm text-slate-600">
+                            {{ livro.autor }}
+                        </p>
+                        <span class="inline-block rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-violet-700">
+                            {{ livro.status }}
+                        </span>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="rounded-xl bg-white p-6 text-center text-slate-500 shadow">
+            Nenhum livro encontrado.
+        </p>
+    {% endif %}
+</section>
+{% endblock %}

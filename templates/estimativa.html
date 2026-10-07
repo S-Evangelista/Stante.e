@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block titulo %} Estimativa - Stante {% endblock %}
+
+{% block conteudo %}
+
+<section class="mb-6 rounded-xl bg-white p-6 shadow">
+
+    <section class="mb-6 flex flex-col items-center text-center gap-2">
+        <img
+            src="{{ url_for('static', filename='images/relogio.png') }}"
+            alt="Despertador tocando"
+            class="h-28 w-auto mb-2"
+        >
+        <h2 class="text-2xl font-bold">Estimativa de leitura</h2>
+    </section>
+
+
+    {% if erro %}
+        <div class="mb-4 rounded-lg bg-rose-100 px-4 py-3 text-sm text-rose-700">
+            {{ erro }}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('estimativa') }}" class="flex flex-col gap-4">
+        <div>
+            <label for="tempo_10_paginas" class="mb-1 block font-semibold">
+                Tempo para ler 10 páginas (em minutos)
+            </label>
+            <input
+                type="number"
+                step="0.1"
+                min="0.1"
+                id="tempo_10_paginas"
+                name="tempo_10_paginas"
+                placeholder="Ex: 12.5"
+                value="{{ resultado.tempo_10_paginas if resultado else '' }}"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                required
+            >
+            <p class="mt-1 text-xs text-slate-500">
+                Cronometre quanto tempo você leva para ler 10 páginas do livro.
+            </p>
+        </div>
+
+        <div>
+            <label for="numero_paginas" class="mb-1 block font-semibold">
+                Número total de páginas do livro
+            </label>
+            <input
+                type="number"
+                step="1"
+                min="1"
+                id="numero_paginas"
+                name="numero_paginas"
+                placeholder="Ex: 320"
+                value="{{ resultado.numero_paginas if resultado else '' }}"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                required
+            >
+        </div>
+
+        <button
+            type="submit"
+            class="rounded-lg bg-violet-300 px-4 py-2 text-white hover:bg-violet-500"
+        >
+            Calcular estimativa
+        </button>
+    </form>
+
+    {% if resultado %}
+        <div class="mt-6 rounded-xl p-5 text-center">
+            <p class="text-sm text-slate-600">Tempo estimado para terminar o livro</p>
+            <p class="my-2 text-3xl font-bold">
+                {% if resultado.horas > 0 %}
+                    {{ resultado.horas }}h {{ resultado.minutos }}min
+                {% else %}
+                    {{ resultado.minutos }}min
+                {% endif %}
+            </p>
+            <p class="text-xs text-slate-500">
+                ({{ resultado.tempo_total_minutos }} minutos no total, para {{ resultado.numero_paginas }} páginas)
+            </p>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

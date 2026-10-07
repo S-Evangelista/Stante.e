@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block titulo %}Editar {{ livro.nome }}{% endblock %}
+
+{% block scripts %}
+<script>
+    function mostrarCamposColecao() {
+        const selecionado = document.querySelector(
+            'input[name="eh_colecao"]:checked'
+        );
+
+        const mostrar = selecionado && selecionado.value === "sim";
+        const campos = document.getElementById("campos-colecao");
+
+        campos.hidden = !mostrar;
+        document.getElementById("nome_colecao").required = mostrar;
+        document.getElementById("volume").required = mostrar;
+    }
+
+    function mostrarCamposAvaliacao() {
+        const status = document.getElementById("status").value;
+        document.getElementById("campos-avaliacao").hidden = status !== "Lido";
+    }
+
+    function mostrarPreviewCapa(event) {
+        const arquivo = event.target.files[0];
+        const preview = document.getElementById("preview-capa");
+        const textoUpload = document.getElementById("texto-upload-capa");
+
+        if (!arquivo) {
+            return;
+        }
+
+        const leitor = new FileReader();
+        leitor.onload = function(e) {
+            preview.src = e.target.result;
+            preview.hidden = false;
+            textoUpload.hidden = true;
+        };
+        leitor.readAsDataURL(arquivo);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        mostrarCamposColecao();
+        mostrarCamposAvaliacao();
+    });
+</script>
+{% endblock %}
+
+{% block conteudo %}
+{% set categorias_do_livro = livro.categoria.split(',') if livro.categoria else [] %}
+
+<section class="rounded-xl bg-white p-6 shadow">
+    <h1 class="mb-6 text-3xl font-bold">Editar livro</h1>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-5">
+        <div>
+            <label for="nome" class="mb-1 block font-semibold">Nome do livro</label>
+            <input
+                id="nome"
+                name="nome"
+                value="{{ livro.nome }}"
+                required
+                class="w-full rounded-lg border border-slate-300 px-3 py-2"
+            >
+        </div>
+
+        <div>
+            <label for="autor" class="mb-1 block font-semibold">Autor</label>
+            <input
+                id="autor"
+                name="autor"
+                value="{{ livro.autor }}"
+                required
+                class="w-full rounded-lg border border-slate-300 px-3 py-2"
+            >
+        </div>
+
+        <div class="flex flex-col items-center">
+            <label for="capa" class="mb-2 block self-start font-semibold">Capa do livro</label>
+
+            <label
+                for="capa"
+                class="flex h-48 w-48 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100"
+            >
+                <img
+                    id="preview-capa"
+                    alt="Pré-visualização da capa"
+                    {% if livro.capa %}
+                        src="{{ url_for('static', filename='uploads/' + livro.capa) }}"
+                    {% else %}
+                        hidden
+                    {% endif %}
+                    class="h-full w-full object-cover"
+                >
+
+                <span
+                    id="texto-upload-capa"
+                    {% if livro.capa %}hidden{% endif %}
+                    class="px-4 text-center text-sm text-slate-500"
+                >
+                    📷<br>Clique para adicionar a capa
+                </span>
+            </label>
+
+            <input
+                id="capa"
+                name="capa"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                onchange="mostrarPreviewCapa(event)"
+            >
+
+            <p class="mt-1 text-xs text-slate-500">
+                Deixe em branco para manter a capa atual.
+            </p>
+        </div>
+
+        <div>
+            <label class="mb-2 block font-semibold">Categorias</label>
+
+            <div class="grid gap-2 sm:grid-cols-2">
+                {% for categoria in categorias %}
+                    <label class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2">
+                        <input
+                            type="checkbox"
+                            name="categorias"
+                            value="{{ categoria }}"
+                            {% if categoria in categorias_do_livro %}checked{% endif %}
+                        >
+                        {{ categoria }}
+                    </label>
+                {% endfor %}
+            </div>
+
+            <p class="mt-1 text-xs text-slate-500">
+                Selecione uma ou mais categorias.
+            </p>
+        </div>
+
+        <div>
+            <label for="status" class="mb-1 block font-semibold">Status de leitura</label>
+            <select
+                id="status"
+                name="status"
+                required
+                onchange="mostrarCamposAvaliacao()"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2"
+            >
+                {% for opcao in status_opcoes %}
+                    <option
+                        value="{{ opcao }}"
+                        {% if livro.status == opcao %}selected{% endif %}
+                    >
+                        {{ opcao }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <fieldset>
+            <legend class="mb-2 font-semibold">É coleção?</legend>
+
+            <label class="mr-4">
+                <input
+                    type="radio"
+                    name="eh_colecao"
+                    value="nao"
+                    {% if not livro.eh_colecao %}checked{% endif %}
+                    onchange="mostrarCamposColecao()"
+                >
+                Não
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="eh_colecao"
+                    value="sim"
+                    {% if livro.eh_colecao %}checked{% endif %}
+                    onchange="mostrarCamposColecao()"
+                >
+                Sim
+            </label>
+        </fieldset>
+
+        <div id="campos-colecao" hidden class="space-y-5 rounded-lg bg-slate-50 p-4">
+            <div>
+                <label for="nome_colecao" class="mb-1 block font-semibold">
+                    Nome da coleção
+                </label>
+                <input
+                    id="nome_colecao"
+                    name="nome_colecao"
+                    value="{{ livro.nome_colecao or '' }}"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                >
+            </div>
+
+            <div>
+                <label for="volume" class="mb-1 block font-semibold">Volume</label>
+                <input
+                    id="volume"
+                    name="volume"
+                    value="{{ livro.volume or '' }}"
+                    placeholder="Ex.: 1, 2 ou 3"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                >
+            </div>
+        </div>
+
+        <section id="campos-avaliacao" hidden class="rounded-lg bg-amber-50 p-4">
+            <h2 class="mb-2 text-xl font-bold">Avaliação do livro</h2>
+
+            <p class="mb-4 text-sm text-slate-600">
+                Estes campos aparecem quando o status está como "Lido".
+            </p>
+
+            <div class="mb-4">
+                <label class="mb-1 block font-semibold">
+                    Nota
+                </label>
+
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="nota" value="5"
+                        {% if livro.nota == 5 %}checked{% endif %}>
+                    <label for="star5">★</label>
+
+                    <input type="radio" id="star4" name="nota" value="4"
+                        {% if livro.nota == 4 %}checked{% endif %}>
+                    <label for="star4">★</label>
+
+                    <input type="radio" id="star3" name="nota" value="3"
+                        {% if livro.nota == 3 %}checked{% endif %}>
+                    <label for="star3">★</label>
+
+                    <input type="radio" id="star2" name="nota" value="2"
+                        {% if livro.nota == 2 %}checked{% endif %}>
+                    <label for="star2">★</label>
+
+                    <input type="radio" id="star1" name="nota" value="1"
+                        {% if livro.nota == 1 %}checked{% endif %}>
+                    <label for="star1">★</label>
+                </div>
+            </div>
+
+            <div>
+                <label for="avaliacao" class="mb-1 block font-semibold">
+                    Comentários
+                </label>
+                <textarea
+                    id="avaliacao"
+                    name="avaliacao"
+                    rows="5"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                >{{ livro.avaliacao or '' }}</textarea>
+            </div>
+        </section>
+
+        <div class="flex justify-center">
+            <button
+                type="submit"
+                class="rounded-lg bg-violet-300 px-4 py-2 text-white hover:bg-violet-500"
+            >
+                Salvar alterações
+            </button>
+        </div>
+    </form>
+</section>
+{% endblock %}

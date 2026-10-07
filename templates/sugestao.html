@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block titulo %} Stante {% endblock %}
+
+{% block conteudo %}
+<section class="rounded-xl bg-white p-6 shadow">
+    <h1 class="mb-2 text-3xl font-bold">O Acaso escolheu...</h1>
+
+    {% if livro %}
+        <h2 class="mb-4 text-2xl font-semibold text-indigo-700">
+            {{ livro.nome }}
+        </h2>
+
+        <div class="mb-5 space-y-2">
+            <p><strong>Autor:</strong> {{ livro.autor }}</p>
+            <p><strong>Categoria:</strong> {{ livro.categoria }}</p>
+            <p><strong>Status:</strong> {{ livro.status }}</p>
+
+            {% if livro.eh_colecao %}
+                <p><strong>Coleção:</strong> {{ livro.nome_colecao }}</p>
+                <p><strong>Volume:</strong> {{ livro.volume }}</p>
+            {% endif %}
+        </div>
+
+        <p class="mb-6 text-slate-600">{{ motivo }}</p>
+
+        <div class="flex flex-wrap gap-3">
+            <a
+                href="{{ url_for('detalhes', livro_id=livro.id) }}"
+                class="rounded-lg bg-violet-300 px-4 py-2 text-white hover:bg-violet-500"
+            >
+                Ver detalhes
+            </a>
+
+            <a
+                href="{{ url_for('proxima_leitura') }}"
+                class="rounded-lg bg-orange-300 px-4 py-2 text-white hover:bg-orange-400"
+            >
+                Tentar o Acaso novamente
+            </a>
+        </div>
+    {% else %}
+        <p class="text-slate-600">{{ motivo }}</p>
+    {% endif %}
+</section>
+{% endblock %}

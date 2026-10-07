@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block titulo %} Stante {% endblock %}</title>
+
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* ===== Sistema de avaliação por estrelas ===== */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 4px;
+            width: fit-content;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 2.2rem;
+            line-height: 1;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: color 0.15s ease, transform 0.15s ease;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #facc15;
+            transform: scale(1.1);
+        }
+
+        .star-rating:not(:hover) input:checked ~ label {
+            color: #facc15;
+        }
+
+        .star-display {
+            display: inline-flex;
+            gap: 2px;
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
+        .star-display .ativa {
+            color: #facc15;
+        }
+
+        .star-display .inativa {
+            color: #d1d5db;
+        }
+    </style>
+
+    {% block scripts %}{% endblock %}
+</head>
+
+<body class="min-h-screen bg-slate-100 text-slate-800">
+    <header class="mx-auto flex max-w-5xl items-center justify-between px-4 py-6">
+      <a href="{{ url_for('index') }}" class="flex items-center">
+        <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Minha biblioteca"
+            class="h-10 w-auto"
+        >
+      </a>
+
+         {% if request.endpoint != 'index' %}
+            <a
+                href="{{ url_for('index') }}"
+                class="rounded-lg bg-slate-100 px-4 py-2 text-grey hover:bg-slate-300"
+            >
+                ←
+            </a>
+        {% endif %}
+    </header>
+
+    <main class="mx-auto max-w-5xl px-4 pb-10">
+        {% block conteudo %}{% endblock %}
+    </main>
+</body>
+</html>
